@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+    <h2>AJAX Submit Form</h2>
+
+    <div class="form">
+        <ul id="form-messages"></ul>
+
+        <label for="username">Username</label>
+        <input type="text" id="username" spellcheck="false">
+
+        <label for="password">Password</label>
+        <input type="password" id="password">
+
+        <button type="submit" id="btn-submit">Login</button>
+
+    </div>
+
+    <script type="text/javascript">
+
+        const form = {
+            messages: document.getElementById('form-messages'),
+            username: document.getElementById('username'),
+            password: document.getElementById('password'),
+            submit: document.getElementById('btn-submit'),
+        };
+
+        // Add an event listener click for the submit button
+        form.submit.addEventListener('click', function () {
+
+            const request = new XMLHttpRequest();
+
+            // This is the response back from the php file
+            request.onload = function() {
+
+                let responseObject = null;
+
+                // We want to check that JSON data is parse correctly
+                try {
+                    responseObject = JSON.parse(request.responseText);
+                } catch (e) {
+                    console.error('Could not parse JSON!', e);
+                }
+
+                if (responseObject) {
+                    handleResponse(responseObject);
+                }
+
+            };
+
+            const requestData = `username=${form.username.value}&password=${form.password.value}`;
+
+            request.open("POST", "check_login.php");
+            request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            request.send(requestData);
+
+        });
+
+        function handleResponse(responseObject) {
+
+            if (responseObject.ok) {
+                location.href = 'dashboard.html'
+            } else {
+                // clear unordered list items
+                while (form.messages.firstChild) {
+                    form.messages.removeChild(form.messages.firstChild);
+                }
+
+                // Loop through the messages from the response object and
+                // create a list tag for each message.
+                responseObject.messages.forEach((message) => {
+                    const li = document.createElement('li');
+                    li.textContent = message;
+                    form.messages.appendChild(li);
+                });
+
+                // Display the error messages
+                form.messages.style.display = "block";
+            }
+        }
+
+    </script>
+
+</body>
+</html>
